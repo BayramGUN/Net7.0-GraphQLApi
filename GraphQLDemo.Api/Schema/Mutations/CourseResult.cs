@@ -1,4 +1,4 @@
-using GraphQLDemo.Api.Schema.Queries;
+using GraphQLDemo.Api.Models;
 
 namespace GraphQLDemo.Api.Schema.Mutations;
 

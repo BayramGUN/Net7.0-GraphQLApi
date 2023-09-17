@@ -1,52 +1,78 @@
 using Bogus;
+using GraphQLDemo.Api.DTOs;
 using GraphQLDemo.Api.Schema.Queries;
 using GraphQLDemo.Api.Schema.Subscriptions;
+using GraphQLDemo.Api.Services.Courses;
 using HotChocolate.Subscriptions;
 
 namespace GraphQLDemo.Api.Schema.Mutations;
 
 public class Mutation
 {
-    private readonly List<CourseResult> _courses;
+    private readonly ICoursesRepository _coursesRepository;
 
-    public Mutation()
+    public Mutation(ICoursesRepository coursesRepository)
     {
-        _courses = new();  
+        _coursesRepository = coursesRepository;
     }
+
 
     public async Task<CourseResult> CreateCourseAsync(CreateCourseInput createCourse,
                                      [Service] ITopicEventSender topicEventSender)
     {
-        
-        CourseResult courseResult = new ()
+
+        CourseDTO courseDTO = new CourseDTO()
         {
-            Id = Guid.NewGuid(),
             Title = createCourse.Title,
             Subject = createCourse.Subject,
             InstructorId = createCourse.InstructorId
         };
+
+        courseDTO = await _coursesRepository!.CreateAsync(courseDTO);
         
-        _courses?.Add(courseResult);
+        CourseResult courseResult = new ()
+        {
+            Id = courseDTO.Id,
+            Title = courseDTO.Title,
+            Subject = courseDTO.Subject,
+            InstructorId = courseDTO.InstructorId
+        };
+        
         await topicEventSender.SendAsync(nameof(Subscription.CourseCreated), courseResult);
         return courseResult;
     }
     public async Task<CourseResult> UpdateCourseAsync(UpdateCourseInput updateCourse, [Service] ITopicEventSender topicEventSender)
     {
-        var willUpdateCourse = 
-            _courses!.FirstOrDefault(c => c.Id == updateCourse.Id) 
-            ?? throw new GraphQLException(new Error(
-                $"There is no course found with that id: {updateCourse.Id}!",
+        if(!await _coursesRepository.IsExistAsync(updateCourse.Id))
+            throw new GraphQLException(new Error(
+                $"There is no course found with given id: {updateCourse.Id}!",
                 "COURSE_NOT_FOUND"));
+        CourseDTO courseDTO = new CourseDTO()
+        {
+            Id = updateCourse.Id,
+            Title = updateCourse.Title,
+            Subject = updateCourse.Subject,
+            InstructorId = updateCourse.InstructorId
+        };
+        await _coursesRepository.UpdateAsync(courseDTO);
 
-        willUpdateCourse.Title = updateCourse.Title;
-        willUpdateCourse.Subject = updateCourse.Subject;
-        willUpdateCourse.InstructorId = updateCourse.InstructorId;
-        await topicEventSender.SendAsync($"{ willUpdateCourse.Id}{nameof(Subscription.CourseUpdated)}", willUpdateCourse);
+        CourseResult courseResult = new ()
+        {
+            Id = courseDTO.Id,
+            Title = courseDTO.Title,
+            Subject = courseDTO.Subject,
+            InstructorId = courseDTO.InstructorId
+        };
+        await topicEventSender.SendAsync($"{ courseResult.Id}{nameof(Subscription.CourseUpdated)}", courseResult);
         
-        return willUpdateCourse;
+        return courseResult;
     }
-    public bool DeleteCourse(Guid id)
+    public async Task<bool> DeleteCourseAsync(Guid id)
     {
-        return _courses.RemoveAll(c => c.Id == id) == 1;
+        if(!await _coursesRepository.IsExistAsync(id))
+            throw new GraphQLException(new Error(
+                $"There is no course found with given id: {id}!",
+                "COURSE_NOT_FOUND"));
+        return await _coursesRepository.DeleteAsync(id);
     } 
 }

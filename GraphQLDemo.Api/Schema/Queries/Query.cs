@@ -1,62 +1,76 @@
 using System.IO.Compression;
 using Bogus;
+using GraphQLDemo.Api.DTOs;
+using GraphQLDemo.Api.Models;
+using GraphQLDemo.Api.Services.Courses;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace GraphQLDemo.Api.Schema.Queries;
 
 public class Query
 {
-    private readonly Faker<CourseType> _courseFaker = null!;
-    private readonly Faker<StudentType> _studentFaker = null!;
-    private readonly Faker<InstructorType> _instructorFaker = null!;
-    public Query()
+    private readonly ICoursesRepository _coursesRepository;
+
+    public Query(ICoursesRepository coursesRepository)
     {
-        _instructorFaker = new Faker<InstructorType>()
-            .RuleFor(i => i.Id, f => Guid.NewGuid())
-            .RuleFor(i => i.FirstName, f => f.Name.FirstName())
-            .RuleFor(i => i.LastName, f => f.Name.LastName())
-            .RuleFor(i => i.Salary, f => Math.Round(f.Random.Double(3000, 10000), 2));
-
-        _studentFaker = new Faker<StudentType>()
-            .RuleFor(s => s.Id, f => Guid.NewGuid())
-            .RuleFor(s => s.FirstName, f => f.Name.FirstName())
-            .RuleFor(s => s.LastName, f => f.Name.LastName())
-            .RuleFor(s => s.GPA, f => Math.Round(f.Random.Double(0, 4), 2));
-
-        _courseFaker = new Faker<CourseType>()
-            .RuleFor(c => c.Id, f => Guid.NewGuid())
-            .RuleFor(c => c.Title, f => f.Name.JobTitle())
-            .RuleFor(c => c.Subject, f => f.PickRandom<Subject>())
-            .RuleFor(c => c.Instructor, f => _instructorFaker.Generate())
-            .RuleFor(c => c.Students, f => _studentFaker.Generate(3));
+        _coursesRepository = coursesRepository;
     }
-    public IEnumerable<StudentType> GetStudents() =>
-        _studentFaker.Generate(2);
-    public IEnumerable<InstructorType> GetInstructors() =>
-        _instructorFaker.Generate(2);
-    public IEnumerable<CourseType> GetCourses() =>
-        _courseFaker.Generate(5);
+
+    
+    public async Task<IEnumerable<CourseType>> GetCoursesAsync()
+    {
+        IEnumerable<CourseDTO> courses = await _coursesRepository.GetAllAsync();
+        return courses.Select(c => new CourseType
+        {
+            Id = c.Id,
+            Title = c.Title,
+            Subject = c.Subject,
+            Students = c.Students?.SelectMany(s => new List<StudentType>
+            {
+                new()
+                {
+                    Id = s.Id,
+                    GPA = s.GPA,
+                    FullName = $"{s.FirstName} {s.LastName}",
+
+                }
+            }).ToList(),
+            Instructor = new InstructorType()
+            {
+                Id = c.Instructor!.Id,
+                FullName = $"{c.Instructor.FirstName} {c.Instructor.LastName}",
+                Salary = c.Instructor.Salary
+            }
+        }).ToList();
+    }
+
+    
 
     public async Task<CourseType> GetCourseByIdAsync(Guid id)
     {
-        await Task.Delay(1000);
-        var course = _courseFaker.Generate();
-        course.Id = id;
-        return course;
+        var course = await _coursesRepository.GetByIdAsync(id);
+        return new CourseType()
+        {
+            Id = course.Id,
+            Title = course.Title,
+            Subject = course.Subject,
+            Students = course.Students?.SelectMany(s => new List<StudentType>
+            {
+                new()
+                {
+                    Id = s.Id,
+                    GPA = s.GPA,
+                    FullName = $"{s.FirstName} {s.LastName}",
+                }
+            }).ToList(),
+            Instructor = new InstructorType()
+            {
+                Id = course.Instructor!.Id,
+                FullName = $"{course.Instructor.FirstName} {course.Instructor.LastName}",
+                Salary = course.Instructor.Salary
+            }
+        };
     }
-
-    /* new List<CourseType>()
-{
-   new CourseType()
-   {
-       Id = Guid.NewGuid(),
-       Title = "Geometry",
-       Subject = Subject.Mathematics,
-       Instructor = new InstructorType()
-       {
-           Id = 
-       }
-   }
-} */
 
     [GraphQLDeprecated("This query is deprecated.")]
     public string Instructions => "Smash that like button and subscribe to Us!";

@@ -1,6 +1,10 @@
 using GraphQLDemo.Api.Schema.Mutations;
 using GraphQLDemo.Api.Schema.Queries;
 using GraphQLDemo.Api.Schema.Subscriptions;
+using GraphQLDemo.Api.Services;
+using GraphQLDemo.Api.Services.Courses;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 var MyAllowSpecificOrigins  = "_mySpecs";
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,8 +25,21 @@ builder.Services.AddGraphQLServer()
                 .AddSubscriptionType<Subscription>()
                 .AddInMemorySubscriptions();
 
+builder.Services.AddPooledDbContextFactory<SchoolDbContext>(
+        o => o.UseSqlServer(connectionString: builder.Configuration.GetConnectionString("SQLServer"))
+);
+
+builder.Services.AddScoped<ICoursesRepository, CoursesRepository>();
 
 var app = builder.Build();
+
+// database context operations
+using var scope = app.Services.CreateScope();
+var services = scope.ServiceProvider;
+var context = services.GetRequiredService<IDbContextFactory<SchoolDbContext>>();
+await context.CreateDbContext().Database.MigrateAsync();
+
+
 app.UseCors(MyAllowSpecificOrigins);
 app.MapGet("/", () => "Hello World!");
 app.UseWebSockets();
