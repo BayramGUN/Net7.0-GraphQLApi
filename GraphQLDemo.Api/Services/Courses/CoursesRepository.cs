@@ -31,18 +31,14 @@ public class CoursesRepository : ICoursesRepository
     public async Task<IEnumerable<CourseDTO>> GetAllAsync()
     {
         var context = await _schoolDbContext.CreateDbContextAsync();
-        return await context.Courses.Include(c => c.Instructor)
-                                    .Include(c => c.Students)
-                                    .ToListAsync();
+        return await context.Courses.ToListAsync();
 
     }
 
     public async Task<CourseDTO> GetByIdAsync(Guid id)
     {
         var context = await _schoolDbContext.CreateDbContextAsync();
-        return await context.Courses.Include(c => c.Instructor)
-                                    .Include(c => c.Students)
-                                    .FirstOrDefaultAsync(c => c.Id == id) ?? null!;
+        return await context.Courses.FirstOrDefaultAsync(c => c.Id == id) ?? null!;
     }
 
     public async Task<bool> IsExistAsync(Guid id)

@@ -18,13 +18,11 @@
                 title
                 subject
                 instructor {
-                  firstName
-                  lastName
+                  fullName
                   salary
                 }
                 students {
-                  firstName
-                  lastName
+                  fullName
                   gpa
                 }
               }
@@ -48,7 +46,7 @@
                 document.getElementById("courseTitles").innerHTML += `<div>
                     <div><b>${course.title}</b>
                         ${course.subject}
-                        <p>${course.instructor.firstName} ${course.instructor.lastName} </p></div>
+                        <p>${course.instructor.fullName}</p></div>
                     </div>`;               
             });
 

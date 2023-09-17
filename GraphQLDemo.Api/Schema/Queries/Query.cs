@@ -25,7 +25,8 @@ public class Query
             Id = c.Id,
             Title = c.Title,
             Subject = c.Subject,
-            Students = c.Students?.SelectMany(s => new List<StudentType>
+            InstructorId = c.InstructorId
+            /* Students = c.Students?.SelectMany(s => new List<StudentType>
             {
                 new()
                 {
@@ -40,7 +41,7 @@ public class Query
                 Id = c.Instructor!.Id,
                 FullName = $"{c.Instructor.FirstName} {c.Instructor.LastName}",
                 Salary = c.Instructor.Salary
-            }
+            } */
         }).ToList();
     }
 
@@ -54,7 +55,8 @@ public class Query
             Id = course.Id,
             Title = course.Title,
             Subject = course.Subject,
-            Students = course.Students?.SelectMany(s => new List<StudentType>
+            InstructorId = course.InstructorId
+          /*   Students = course.Students?.SelectMany(s => new List<StudentType>
             {
                 new()
                 {
@@ -68,7 +70,7 @@ public class Query
                 Id = course.Instructor!.Id,
                 FullName = $"{course.Instructor.FirstName} {course.Instructor.LastName}",
                 Salary = course.Instructor.Salary
-            }
+            } */
         };
     }
 
