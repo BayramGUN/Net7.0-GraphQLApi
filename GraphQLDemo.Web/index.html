@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <button onclick="showGraphData()">Show data</button>
+    <div id="courseTitles">
+    </div>
+    <script>
+        async function showGraphData() {
+            const query = `
+            {
+              courses {
+                title
+                subject
+                instructor {
+                  firstName
+                  lastName
+                  salary
+                }
+                students {
+                  firstName
+                  lastName
+                  gpa
+                }
+              }
+            }`;
+            const url = `https://localhost:7243/graphql`;
+            const request = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    query: query
+                })
+            };
+            const response = await fetch(url, request);
+            const responseData = await response.json();
+            const courses = responseData.data.courses;
+            courses.forEach(course => {
+                console.log(course)
+                document.getElementById("courseTitles").innerHTML += `<div>
+                    <div><b>${course.title}</b>
+                        ${course.subject}
+                        <p>${course.instructor.firstName} ${course.instructor.lastName} </p></div>
+                    </div>`;               
+            });
+
+
+            
+        }
+    </script>
+</body>
+</html>
