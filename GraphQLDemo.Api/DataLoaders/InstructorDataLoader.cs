@@ -18,7 +18,7 @@ public class InstructorDataLoader : BatchDataLoader<Guid, InstructorDTO>
         IReadOnlyList<Guid> keys,
         CancellationToken cancellationToken)
     {
-        var instructorDTOs = await _instructorsRepository.GetManyByIds(keys);
+        var instructorDTOs = await _instructorsRepository.GetManyByIdsAsync(keys);
         return instructorDTOs.ToDictionary(i => i.Id);
     }
 }

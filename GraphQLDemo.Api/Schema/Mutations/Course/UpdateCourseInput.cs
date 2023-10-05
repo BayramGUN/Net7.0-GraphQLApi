@@ -1,6 +1,5 @@
 using GraphQLDemo.Api.Models;
-using GraphQLDemo.Api.Schema.Queries;
 
-namespace GraphQLDemo.Api.Schema.Mutations;
+namespace GraphQLDemo.Api.Schema.Mutations.Course;
 
 public record UpdateCourseInput(Guid Id, string Title, Subject Subject, Guid InstructorId);

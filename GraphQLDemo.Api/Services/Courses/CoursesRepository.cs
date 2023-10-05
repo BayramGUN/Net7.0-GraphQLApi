@@ -31,14 +31,14 @@ public class CoursesRepository : ICoursesRepository
     public async Task<IEnumerable<CourseDTO>> GetAllAsync()
     {
         var context = await _schoolDbContext.CreateDbContextAsync();
-        return await context.Courses.ToListAsync();
+        return await context.Courses.Include(c => c.Students).ToListAsync();
 
     }
 
     public async Task<CourseDTO> GetByIdAsync(Guid id)
     {
         var context = await _schoolDbContext.CreateDbContextAsync();
-        return await context.Courses.FirstOrDefaultAsync(c => c.Id == id) ?? null!;
+        return await context.Courses.Include(c => c.Students).FirstOrDefaultAsync(c => c.Id == id) ?? null!;
     }
 
     public async Task<bool> IsExistAsync(Guid id)
@@ -52,6 +52,18 @@ public class CoursesRepository : ICoursesRepository
         var context = await _schoolDbContext.CreateDbContextAsync();
         context.Courses.Update(course);
         await context.SaveChangesAsync();
-        return  course;
+        return course;
+    }
+
+    public async Task<CourseDTO> AddStudentsToCourseAsync(IEnumerable<StudentDTO> students, Guid courseId)
+    {
+        var context = await _schoolDbContext.CreateDbContextAsync();
+        var course = await context.Courses.Include(c => c.Students).FirstAsync(c => c.Id == courseId);
+        var studentsInCourse = course.Students?.ToList();
+        studentsInCourse!.AddRange(students);
+        course.Students = studentsInCourse;
+        context.Update(course);
+        await context.SaveChangesAsync();
+        return course;
     }
 }

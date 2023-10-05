@@ -6,4 +6,5 @@ public class StudentType
     public required string FullName { get; set; }
     [GraphQLName("gpa")]
     public double GPA { get; set; }
+    public IEnumerable<CourseType>? Courses { get; set; }
 }

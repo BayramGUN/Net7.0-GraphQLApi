@@ -41,7 +41,7 @@ public class InstructorsRepository : IInstructorsRepository
         return await context.Instructors.FirstOrDefaultAsync(c => c.Id == id) ?? null!;
     }
 
-    public async Task<IEnumerable<InstructorDTO>> GetManyByIds(IReadOnlyList<Guid> instructorIds)
+    public async Task<IEnumerable<InstructorDTO>> GetManyByIdsAsync(IReadOnlyList<Guid> instructorIds)
     {
         var context = await _schoolDbContext.CreateDbContextAsync();
         return await context.Instructors.Where(i => instructorIds.Contains(i.Id)).ToListAsync();

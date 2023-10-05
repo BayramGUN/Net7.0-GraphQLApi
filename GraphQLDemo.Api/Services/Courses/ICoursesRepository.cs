@@ -7,6 +7,7 @@ public interface ICoursesRepository
     // Mutations/Commands
     Task<CourseDTO> CreateAsync(CourseDTO course);
     Task<CourseDTO> UpdateAsync(CourseDTO course);
+    Task<CourseDTO> AddStudentsToCourseAsync(IEnumerable<StudentDTO> students, Guid courseId);
     Task<bool> DeleteAsync(Guid id);
 
     // Queries

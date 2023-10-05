@@ -3,6 +3,8 @@ using Bogus;
 using GraphQLDemo.Api.DTOs;
 using GraphQLDemo.Api.Models;
 using GraphQLDemo.Api.Services.Courses;
+using GraphQLDemo.Api.Services.Instructors;
+using GraphQLDemo.Api.Services.Students;
 using Microsoft.EntityFrameworkCore.Internal;
 
 namespace GraphQLDemo.Api.Schema.Queries;
@@ -10,13 +12,28 @@ namespace GraphQLDemo.Api.Schema.Queries;
 public class Query
 {
     private readonly ICoursesRepository _coursesRepository;
+    private readonly IInstructorsRepository _instructorRepository;
+    private readonly IStudentsRepository _studentRepository;
 
-    public Query(ICoursesRepository coursesRepository)
+    public Query(ICoursesRepository coursesRepository,
+                 IInstructorsRepository instructorRepository,
+                 IStudentsRepository studentRepository)
     {
         _coursesRepository = coursesRepository;
+        _instructorRepository = instructorRepository;
+        _studentRepository = studentRepository;
     }
 
-    
+    public async Task<IEnumerable<InstructorType>> GetInstructorsAsync() 
+    {
+        IEnumerable<InstructorDTO> instructorDTOs = await _instructorRepository.GetAllAsync();
+        return instructorDTOs.Select(i => new InstructorType
+        {
+            Id = i.Id,
+            FullName = $"{i.FirstName} {i.LastName}",
+            Salary = i.Salary
+        });
+    }
     public async Task<IEnumerable<CourseType>> GetCoursesAsync()
     {
         IEnumerable<CourseDTO> courses = await _coursesRepository.GetAllAsync();
@@ -25,8 +42,8 @@ public class Query
             Id = c.Id,
             Title = c.Title,
             Subject = c.Subject,
-            InstructorId = c.InstructorId
-            /* Students = c.Students?.SelectMany(s => new List<StudentType>
+            InstructorId = c.InstructorId,
+            Students = c.Students?.SelectMany(s => new List<StudentType>
             {
                 new()
                 {
@@ -36,12 +53,28 @@ public class Query
 
                 }
             }).ToList(),
-            Instructor = new InstructorType()
+            
+        }).ToList();
+    }
+    public async Task<IEnumerable<StudentType>> GetStudentsAsync()
+    {
+        IEnumerable<StudentDTO> students = await _studentRepository.GetAllAsync();
+        return students.Select(s => new StudentType
+        {
+            Id = s.Id,
+            FullName = $"{s.FirstName} {s.LastName}",
+            GPA = s.GPA,
+            Courses = s.Courses?.SelectMany(s => new List<CourseType>
             {
-                Id = c.Instructor!.Id,
-                FullName = $"{c.Instructor.FirstName} {c.Instructor.LastName}",
-                Salary = c.Instructor.Salary
-            } */
+                new()
+                {
+                    Id = s.Id,
+                    Title = s.Title,
+                    Subject = s.Subject,
+                    InstructorId = s.InstructorId
+                }
+            }).ToList(),
+            
         }).ToList();
     }
 
@@ -55,8 +88,8 @@ public class Query
             Id = course.Id,
             Title = course.Title,
             Subject = course.Subject,
-            InstructorId = course.InstructorId
-          /*   Students = course.Students?.SelectMany(s => new List<StudentType>
+            InstructorId = course.InstructorId,
+            Students = course.Students?.SelectMany(s => new List<StudentType>
             {
                 new()
                 {
@@ -64,16 +97,10 @@ public class Query
                     GPA = s.GPA,
                     FullName = $"{s.FirstName} {s.LastName}",
                 }
-            }).ToList(),
-            Instructor = new InstructorType()
-            {
-                Id = course.Instructor!.Id,
-                FullName = $"{course.Instructor.FirstName} {course.Instructor.LastName}",
-                Salary = course.Instructor.Salary
-            } */
+            }).ToList()
         };
     }
 
-    [GraphQLDeprecated("This query is deprecated.")]
+    [GraphQLDeprecated("This course query is deprecated.")]
     public string Instructions => "Smash that like button and subscribe to Us!";
 }

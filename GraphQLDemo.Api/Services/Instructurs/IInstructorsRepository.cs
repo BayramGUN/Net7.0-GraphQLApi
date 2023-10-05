@@ -13,5 +13,5 @@ public interface IInstructorsRepository
     Task<bool> IsExistAsync(Guid id);
     Task<InstructorDTO> GetByIdAsync(Guid id);
     Task<IEnumerable<InstructorDTO>> GetAllAsync();
-    Task<IEnumerable<InstructorDTO>> GetManyByIds(IReadOnlyList<Guid> instructorIds);
+    Task<IEnumerable<InstructorDTO>> GetManyByIdsAsync(IReadOnlyList<Guid> instructorIds);
 }

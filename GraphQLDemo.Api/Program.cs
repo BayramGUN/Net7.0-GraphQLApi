@@ -5,6 +5,7 @@ using GraphQLDemo.Api.Schema.Subscriptions;
 using GraphQLDemo.Api.Services;
 using GraphQLDemo.Api.Services.Courses;
 using GraphQLDemo.Api.Services.Instructors;
+using GraphQLDemo.Api.Services.Students;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 var MyAllowSpecificOrigins  = "_mySpecs";
@@ -33,6 +34,7 @@ builder.Services.AddPooledDbContextFactory<SchoolDbContext>(
 
 builder.Services.AddScoped<ICoursesRepository, CoursesRepository>();
 builder.Services.AddScoped<IInstructorsRepository, InstructorsRepository>();
+builder.Services.AddScoped<IStudentsRepository, StudentsRepository>();
 builder.Services.AddScoped<InstructorDataLoader>();
 
 var app = builder.Build();

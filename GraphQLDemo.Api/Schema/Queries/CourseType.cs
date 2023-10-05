@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using GraphQLDemo.Api.DataLoaders;
+using GraphQLDemo.Api.DTOs;
 using GraphQLDemo.Api.Models;
 using GraphQLDemo.Api.Services.Instructors;
 
@@ -24,6 +25,6 @@ public class CourseType
             Salary = instructorDto.Salary
         };
     }
-
     public IEnumerable<StudentType>? Students { get; set; }
+    
 }
